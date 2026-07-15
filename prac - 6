@@ -1,0 +1,188 @@
+Step 1: Create a folder
+
+Create a folder named:
+
+Practical6
+
+Inside it create:
+
+Practical6
+│
+├── practical6.py
+└── stream_data
+
+stream_data is just an empty folder. Spark will monitor this folder for new text files.
+
+Step 2: Open VS Code
+
+Open VS Code.
+
+Click
+
+File → Open Folder
+
+Select
+
+Practical6
+Step 3: Create Python file
+
+Create
+
+practical6.py
+
+Paste this code:
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import explode, split
+
+# Create Spark Session
+spark = SparkSession.builder \
+    .appName("StreamingWordCount") \
+    .getOrCreate()
+
+spark.sparkContext.setLogLevel("ERROR")
+
+# Read text files from stream_data folder
+df = spark.readStream.format("text").load("stream_data")
+
+# Split each line into words
+words = df.select(
+    explode(split(df.value, " ")).alias("word")
+)
+
+# Count words
+word_counts = words.groupBy("word").count()
+
+# Display output
+query = word_counts.writeStream \
+    .outputMode("complete") \
+    .format("console") \
+    .start()
+
+query.awaitTermination()
+Step 4: Open Terminal
+
+In VS Code
+
+Terminal
+↓
+New Terminal
+Step 5: Run the Program
+
+Run
+
+spark-submit practical6.py
+
+or if Spark is not in PATH
+
+C:\spark\bin\spark-submit.cmd practical6.py
+
+The program will start and wait for input.
+
+It may look like nothing is happening. This is normal.
+
+Step 6: Open the stream_data folder
+
+Open
+
+Practical6
+
+Then open
+
+stream_data
+
+Currently it is empty.
+
+Step 7: Create first file
+
+Create
+
+file1.txt
+
+Write
+
+hello spark streaming
+
+Save it.
+
+Spark immediately reads it.
+
+Console output becomes something like
+
++----------+-----+
+|word      |count|
++----------+-----+
+|hello     |1    |
+|spark     |1    |
+|streaming |1    |
++----------+-----+
+Step 8: Create second file
+
+Inside stream_data
+
+Create
+
+file2.txt
+
+Write
+
+hello big data spark
+
+Save it.
+
+Spark automatically detects the new file.
+
+Console becomes
+
++----------+-----+
+|word      |count|
++----------+-----+
+|hello     |2    |
+|spark     |2    |
+|streaming |1    |
+|big       |1    |
+|data      |1    |
++----------+-----+
+Step 9: Stop the program
+
+Press
+
+Ctrl + C
+What is happening?
+stream_data folder
+        │
+        ▼
+Spark watches the folder
+        │
+        ▼
+You create file1.txt
+        │
+        ▼
+Spark reads it
+        │
+        ▼
+Counts words
+        │
+        ▼
+Displays output
+        │
+        ▼
+You add file2.txt
+        │
+        ▼
+Spark updates the counts automatically
+Viva explanation (2 marks)
+
+If the examiner asks "What is Spark Streaming?", you can answer:
+
+Spark Streaming is used to process real-time incoming data. In this practical, Spark continuously monitors the stream_data folder. Whenever a new text file is added, it reads the file, splits the text into words, counts the occurrences of each word, and displays the updated result on the console.
+
+One important question
+
+Can you run this command successfully on your laptop?
+
+spark-submit --version
+
+If yes, you're ready to perform Practical 6.
+
+If no, then Spark isn't installed correctly, and we'll need to fix the installation before this practical will run.
