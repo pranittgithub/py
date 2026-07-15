@@ -1,0 +1,25 @@
+from pyspark.sql import SparkSession
+import matplotlib.pyplot as plt
+
+spark = SparkSession.builder.appName("StudentMarks").getOrCreate()
+
+data = [
+    ("Pranit", 85),
+    ("Rahul", 70),
+    ("Neha", 90),
+    ("Amit", 60)
+]
+
+df = spark.createDataFrame(data, ["Name", "Marks"])
+
+df.show()
+
+pdf = df.toPandas()
+
+plt.bar(pdf["Name"], pdf["Marks"])
+plt.title("Student Marks")
+plt.xlabel("Student")
+plt.ylabel("Marks")
+plt.show()
+
+spark.stop()
