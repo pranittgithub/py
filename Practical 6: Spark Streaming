@@ -1,0 +1,14 @@
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("StreamingExample").getOrCreate()
+
+stream = spark.readStream.format("rate").option("rowsPerSecond", 2).load()
+
+query = (
+    stream.writeStream
+    .outputMode("append")
+    .format("console")
+    .start()
+)
+
+query.awaitTermination()
