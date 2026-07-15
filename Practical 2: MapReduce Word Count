@@ -1,0 +1,28 @@
+from collections import defaultdict
+
+text = """
+Big Data Analytics uses Hadoop.
+Hadoop is useful for Big Data.
+Big Data is powerful.
+"""
+
+# Mapper
+mapped = []
+
+for line in text.split("\n"):
+    for word in line.split():
+        mapped.append((word.lower().strip(".,"), 1))
+
+print("Mapper Output")
+print(mapped)
+
+# Reducer
+result = defaultdict(int)
+
+for word, count in mapped:
+    result[word] += count
+
+print("\nReducer Output")
+
+for word, count in result.items():
+    print(word, ":", count)
