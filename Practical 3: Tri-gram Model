@@ -1,0 +1,16 @@
+import nltk
+from nltk.util import trigrams
+
+nltk.download('punkt')
+nltk.download('punkt_tab')
+
+text = "Big Data Analytics is an important subject."
+
+words = nltk.word_tokenize(text)
+
+tri = list(trigrams(words))
+
+print("Tri-grams")
+
+for t in tri:
+    print(t)
