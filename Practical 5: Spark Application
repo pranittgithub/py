@@ -1,0 +1,22 @@
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("EmployeeData").getOrCreate()
+
+data = [
+    (1, "Pranit", 50000),
+    (2, "Rahul", 40000),
+    (3, "Amit", 60000),
+    (4, "Neha", 55000)
+]
+
+df = spark.createDataFrame(data, ["ID", "Name", "Salary"])
+
+print("Complete Data")
+df.show()
+
+print("Salary > 50000")
+
+df.filter(df.Salary > 50000).show()
+
+spark.stop()
