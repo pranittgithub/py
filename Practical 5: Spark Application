@@ -1,22 +1,69 @@
-
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 
-spark = SparkSession.builder.appName("EmployeeData").getOrCreate()
+# Create Spark Session
+spark = SparkSession.builder.appName("ErrorHandlingRecovery").getOrCreate()
 
+# Sample data with invalid values
 data = [
-    (1, "Pranit", 50000),
-    (2, "Rahul", 40000),
-    (3, "Amit", 60000),
-    (4, "Neha", 55000)
+    ("Alice", 25),
+    ("Bob", "thirty"),
+    ("Charlie", 35),
+    ("David", None)
 ]
 
-df = spark.createDataFrame(data, ["ID", "Name", "Salary"])
+columns = ["Name", "Age"]
 
-print("Complete Data")
+# Create DataFrame
+df = spark.createDataFrame(data, columns)
+
+print("Original Data")
 df.show()
 
-print("Salary > 50000")
+# -----------------------------
+# Error Handling (Data Cleaning)
+# -----------------------------
+print("Valid Integer Ages")
 
-df.filter(df.Salary > 50000).show()
+df_clean = df.filter(col("Age").cast("int").isNotNull())
+df_clean.show()
+
+# -----------------------------
+# Try-Except Function
+# -----------------------------
+def safe_convert(x):
+    try:
+        return int(x)
+    except:
+        return None
+
+rdd = df.rdd
+
+processed_rdd = rdd.map(
+    lambda row: (row["Name"], safe_convert(row["Age"]))
+)
+
+df_processed = processed_rdd.toDF(["Name", "Age"])
+
+print("After Safe Conversion")
+df_processed.show()
+
+# -----------------------------
+# Data Recovery
+# -----------------------------
+df_final = df_processed.fillna({"Age": 0})
+
+print("Recovered Data")
+df_final.show()
+
+# -----------------------------
+# Save and Reload
+# -----------------------------
+df_final.write.mode("overwrite").csv("output_data")
+
+df_recovered = spark.read.csv("output_data", header=False)
+
+print("Recovered from CSV")
+df_recovered.show()
 
 spark.stop()
